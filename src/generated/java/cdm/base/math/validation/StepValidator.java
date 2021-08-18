@@ -1,0 +1,33 @@
+package cdm.base.math.validation;
+
+import cdm.base.math.Step;
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+import com.rosetta.model.lib.validation.Validator;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.joining;
+
+public class StepValidator implements Validator<Step> {
+
+	@Override
+	public ValidationResult<Step> validate(RosettaPath path, Step o) {
+		String error = 
+			Lists.<ComparisonResult>newArrayList(
+				checkCardinality("stepDate", o.getStepDate()!=null ? 1 : 0, 1, 1),
+				checkCardinality("stepValue", o.getStepValue()!=null ? 1 : 0, 1, 1),
+				checkCardinality("meta", o.getMeta()!=null ? 1 : 0, 0, 1)
+			).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
+		
+		if (!isNullOrEmpty(error)) {
+			return failure("Step", ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
+		}
+		return success("Step", ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
+	}
+
+}
